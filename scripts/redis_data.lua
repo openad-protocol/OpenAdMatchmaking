@@ -610,7 +610,6 @@ function RedisData:getEventId(data,zoneId,publisherId)
     local zoneKey = string.format("%s:rule",key)
     ngx.log(ngx.DEBUG,zoneKey)
     local rule,err = self.redis:get(zoneKey)
-    ngx.log(ngx.DEBUG,"------------->"..rule..err)
     local zoneRule = cjson.decode(rule)
 
     -- 取30秒内pv

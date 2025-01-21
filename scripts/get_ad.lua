@@ -50,6 +50,9 @@ local function get_args()
         fromType = args.fromType or '',
         location = ngx.encode_base64(args.location or ''),
         traceId = args.traceId or '',
+        isPremium=args.isPremium or '',
+        walletType=args.walletType or '',
+        walletAddress=args.walletAddress or '',
         requestType = "getAd"
     }
     return data

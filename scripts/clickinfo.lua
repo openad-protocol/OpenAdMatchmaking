@@ -37,6 +37,9 @@ local function get_args()
         location = ngx.encode_base64(args.location or ''),
         hash = args.hash or '',
         traceId = args.traceId or '',
+        isPremium=args.isPremium or '',
+        walletType=args.walletType or '',
+        walletAddress=args.walletAddress or '',
         requestType = "clickinfo"
     }
     ngx.log(ngx.DEBUG, "Data: " .. cjson.encode(data))
