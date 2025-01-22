@@ -370,7 +370,7 @@ end
 
 -- 取得IP地址PV
 function RedisData:getIpAddrPv(tp,ip)
-    local key = string.format("%s:global:ip1day:%s:%",m_global:get_appname(),tp,ip)
+    local key = string.format("%s:global:ip1day:%s:%s",m_global:get_appname(),tp,ip)
     local res,err = self.redis:get(key)
     if res == nil then
         ngx.log(ngx.DEBUG, "Failed to get ip from Redis: ", err)
