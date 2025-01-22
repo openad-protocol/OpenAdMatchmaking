@@ -312,7 +312,7 @@ end
 -- 根据eventId增加IP地址UV
 function RedisData:addIpAddrUv(tp,ip,traceId)
     --local key = m_global:get_appname() .. ":ip1duv" .. ":type" .. tp .. ":" .. ip
-    local key = string.format("%s:global:ip1day:%s:%s",m_global:get_appname(),tp,ip)
+    local key = string.format("%s:global:ip1dayuv:%s:%s",m_global:get_appname(),tp,ip)
     -- 检查 key是否存在,存在的不重设过期时间
     local res,err = self.redis:pfcount(key)
     local newCreate = false
@@ -340,7 +340,7 @@ end
 -- 取得IP地址ZoneId下所有eventId的总共UV
 function RedisData:getIpAddrUv(tp,ip)
     --local key = m_global:get_appname() .. ":ip1duv" .. ":type" .. tp .. ":" .. ip
-    local key = string.format("%s:global:ip1day:%s:%s",m_global:get_appname(),tp,ip)
+    local key = string.format("%s:global:ip1dayuv:%s:%s",m_global:get_appname(),tp,ip)
     local res,err = self.redis:pfcount(key)
     if err ~=nil  or res == nil or res==cjson.null then
         ngx.log(ngx.DEBUG, "Failed to get ip from Redis: ", err)
@@ -617,6 +617,8 @@ function RedisData:getEventId(data,zoneId,publisherId)
     local err = nil
     -- 取日的PV/UV数
     local    dayZonePvNumber ,dayZoneUvNumber= 0,0
+    -- todo: 从redis取得zone的日PV/UV数
+    -- todo: end
     ngx.log(ngx.DEBUG,string.format("dayZonePvNumber:%s dayZoneUvNumber:%s",dayZonePvNumber, dayZoneUvNumber))
     -- 取IP的日PV
     local dayPvNumber = 0
