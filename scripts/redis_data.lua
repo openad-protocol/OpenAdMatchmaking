@@ -569,7 +569,7 @@ end
 
 function RedisData:getEventId(data,zoneId,publisherId)
     -- 全局规则判断
-    local globalDayIpPvNumber = self:getIpAddrUv("getAd",data.ip_address)
+    local globalDayIpPvNumber = self:getIpAddrpv("getAd",data.ip_address)
     local globalThreeNumber = self:getThreeIpPv("getAd",data.ip_address)
     if globalDayIpPvNumber ~= nil and globalThreeNumber ~=nil then
         -- 取IP取则
