@@ -718,9 +718,9 @@ function RedisData:getEventId(data,zoneId,publisherId)
             goto continue
         end
         -- 单用户PV判断
-        if tbEvent.singleMaxPv ~= nil  and singleNumberPv > tbEvent.singleMaxPv then
+        if tbEvent.singleMaxpv ~= nil  and singleNumberPv > tbEvent.singleMaxpv then
             ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,singleNumber:%s",
-                eventId,tbEvent.singleMaxPv,singleNumberPv))
+                eventId,tbEvent.singleMaxpv,singleNumberPv))
             bNotFindEvent = false
             goto continue
         end
