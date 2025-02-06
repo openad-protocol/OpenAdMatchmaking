@@ -164,11 +164,10 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
     ngx.log(ngx.DEBUG,"singleKey is :",singleKey,"  eventMaxUvKey is :",eventMaxUvKey)
 
     local skn,err = self.redis:incr(singleKey)
-    if skn== nil then
+    if skn == nil then
         ngx.log(ngx.DEBUG, string.format("add Event Calc singleKey Failed : %s", err))
         return false
     end
-    -- self.redis:set_expire(singleKey,60*5)
     self.redis:set_expire(singleKey,m_global:get_statistics_expire())
 
     -- event的uv计数
@@ -177,8 +176,7 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
         ngx.log(ngx.DEBUG, string.format("add Event Calc eventMaxUvKey Failed: %s", err))
         return false
     end
-    -- self.redis:set_expire(eventMaxUvKey,60*5)
-    self.redis:set_expire(singleKey,m_global:get_statistics_expire())
+    self.redis:set_expire(eventMaxUvKey,m_global:get_statistics_expire())
 
     -- event的pv计数
     local pvn,err = self.redis:incr(eventMaxPvKey)
@@ -195,9 +193,11 @@ end
 function RedisData:getEventCalc(zoneId,eventId,tp,traceId)
     local singleKey = m_global:get_appname() .. ":zone:" ..zoneId .. ":eventId:" .. eventId ..":" .. tp .. ":singleMaxpv:" .. traceId -- 按traceId计数
     local eventMaxUvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
-    local eventMaxPvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
-    ngx.log(ngx.DEBUG,"singleKey is :",singleKey,"  eventMaxUvKey is :",eventMaxUvKey)
-   
+    local eventMaxPvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxPv"  -- 按eventId计数
+    ngx.log(ngx.DEBUG,
+        string.format("singleKey is:%s eventMaxUvKey is:%s eventMaxPvKey is:%s",
+        singleKey,eventMaxUvKey,eventMaxPvKey)
+     )
     -- 单个tracerId的key
     local singleNumber,err = self.redis:get(singleKey)
     if err ~= nil or singleNumber == nil or singleNumber==cjson.null  then
@@ -698,23 +698,25 @@ function RedisData:getEventId(data,zoneId,publisherId)
         eventId = eventElement.id
         tbEvent = cjson.decode(eventElement.value)
         bNotFindEvent = true
-        local singleNumber,eventNumber,eventPvNumber = self:getEventCalc(zoneId,eventId,"loginfo",data.traceId) -- 从loginfo取得pv/uv统计
+        local singleNumberPv,totalMaxUv,totalMaxPv= self:getEventCalc(zoneId,eventId,"loginfo",data.traceId) -- 从loginfo取得pv/uv统计
         -- UV判断
-        if tbEvent.singleMaxUv ~=nil and eventNumber > tbEvent.singleMaxUv then
-            ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxUv:%s,singleNumber:%s, totalMaxUv:%s traceId:%s",eventId,tbEvent.singleMaxUv,singleNumber,tbEvent.totalMaxUv,data.traceId))
+        if tbEvent.totalMaxUv ~=nil and totalMaxUv > tbEvent.singleMaxUv then
+            ngx.log(ngx.DEBUG,string.format("event id:%s, totalMaxUv:%s,tbEvent.totalMaxUv:%s, traceId:%s",
+                eventId,totalMaxUv,tbEvent.totalMaxUv,data.traceId))
             bNotFindEvent = false
             goto continue
         end
         -- PV判断
-        if tbEvent.singleMaxpv ~= nil and eventPvNumber > tbEvent.singleMaxpv then
-            ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,singleNumber:%s, totalMaxPv:%s traceId:%s",eventId,tbEvent.singleMaxpv,singleNumber,tbEvent.totalMaxPv,data.traceId))
+        if tbEvent.totalMaxpv ~= nil and totalMaxPv > tbEvent.totalMaxpv then
+            ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,tbEvent.totalMaxPv:%s,traceId:%s",
+                eventId,totalMaxPv,tbEvent.totalMaxpv,data.traceId))
             bNotFindEvent = false
             goto continue
         end
         -- 单用户PV判断
-        ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,singleNumber:%s, totalMaxPv:%s traceId:%s",eventId,tbEvent.singleMaxpv,singleNumber,tbEvent.totalMaxPv,data.traceId))
-        if tbEvent.singleMaxpv ~= nil  and singleNumber > tbEvent.singleMaxpv then
-            ngx.log(ngx.DEBUG,string.format("remove event id:%s traceId:%s",eventId,data.traceId))
+        if tbEvent.singleMaxPv ~= nil  and singleNumberPv > tbEvent.singleMaxPv then
+            ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,singleNumber:%s",
+                eventId,tbEvent.singleMaxPv,singleNumberPv))
             bNotFindEvent = false
             goto continue
         end
