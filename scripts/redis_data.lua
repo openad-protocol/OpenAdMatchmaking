@@ -158,6 +158,9 @@ end
 function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
     local singleKey = m_global:get_appname() .. ":zone:" ..zoneId .. ":eventId:" .. eventId ..":" .. tp .. ":singleMaxpv:" .. traceId -- 按traceId计数
     local eventMaxUvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
+    local eventMaxPvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
+
+    -- 单个tracerId的key
     ngx.log(ngx.DEBUG,"singleKey is :",singleKey,"  eventMaxUvKey is :",eventMaxUvKey)
 
     local skn,err = self.redis:incr(singleKey)
@@ -168,6 +171,7 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
     -- self.redis:set_expire(singleKey,60*5)
     self.redis:set_expire(singleKey,m_global:get_statistics_expire())
 
+    -- event的uv计数
     local uvn,err = self.redis:pfadd(eventMaxUvKey,traceId)
     if uvn == nil then
         ngx.log(ngx.DEBUG, string.format("add Event Calc eventMaxUvKey Failed: %s", err))
@@ -176,6 +180,14 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
     -- self.redis:set_expire(eventMaxUvKey,60*5)
     self.redis:set_expire(singleKey,m_global:get_statistics_expire())
 
+    -- event的pv计数
+    local pvn,err = self.redis:incr(eventMaxPvKey)
+    if pvn == nil then
+        ngx.log(ngx.DEBUG, string.format("add Event Calc eventMaxPvKey Failed: %s", err))
+        return false
+    end
+    self.redis:set_expire(eventMaxPvKey,m_global:get_statistics_expire())
+
     ngx.log(ngx.DEBUG,string.format("addEventCalc success zoneId:%s,singleNumber :%s,eventNumber:%s",zoneId,skn,uvn))
     return true
 end
@@ -183,20 +195,29 @@ end
 function RedisData:getEventCalc(zoneId,eventId,tp,traceId)
     local singleKey = m_global:get_appname() .. ":zone:" ..zoneId .. ":eventId:" .. eventId ..":" .. tp .. ":singleMaxpv:" .. traceId -- 按traceId计数
     local eventMaxUvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
+    local eventMaxPvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
     ngx.log(ngx.DEBUG,"singleKey is :",singleKey,"  eventMaxUvKey is :",eventMaxUvKey)
-    
+   
+    -- 单个tracerId的key
     local singleNumber,err = self.redis:get(singleKey)
     if err ~= nil or singleNumber == nil or singleNumber==cjson.null  then
         ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", tp)
         return 0,0
     end
+    -- event的uv计数
     local eventNumber,err = self.redis:pfcount(eventMaxUvKey)
     if err ~= nil or eventNumber == nil then
         ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", err)
         return 0,0
     end
+    -- event的pv计数
+    local eventPv,err = self.redis:get(eventMaxPvKey)
+    if err ~= nil or eventPv == nil then
+        ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", err)
+        return 0,0
+    end
     ngx.log(ngx.DEBUG,"singleNumber:",singleNumber,"  eventNumber:",eventNumber)
-    return tonumber(singleNumber),tonumber(eventNumber)
+    return tonumber(singleNumber),tonumber(eventNumber),tonumber(eventPv)
 end
 
 -- 增加用户来访计数 appname:zoneId:eventId:session values
@@ -677,21 +698,28 @@ function RedisData:getEventId(data,zoneId,publisherId)
         eventId = eventElement.id
         tbEvent = cjson.decode(eventElement.value)
         bNotFindEvent = true
-        local singleNumber,eventNumber = self:getEventCalc(zoneId,eventId,"loginfo",data.traceId) -- 从loginfo取得pv/uv统计
-
+        local singleNumber,eventNumber,eventPvNumber = self:getEventCalc(zoneId,eventId,"loginfo",data.traceId) -- 从loginfo取得pv/uv统计
+        -- UV判断
+        if tbEvent.singleMaxUv ~=nil and eventNumber > tbEvent.singleMaxUv then
+            ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxUv:%s,singleNumber:%s, totalMaxUv:%s traceId:%s",eventId,tbEvent.singleMaxUv,singleNumber,tbEvent.totalMaxUv,data.traceId))
+            bNotFindEvent = false
+            goto continue
+        end
+        -- PV判断
+        if tbEvent.singleMaxpv ~= nil and eventPvNumber > tbEvent.singleMaxpv then
+            ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,singleNumber:%s, totalMaxPv:%s traceId:%s",eventId,tbEvent.singleMaxpv,singleNumber,tbEvent.totalMaxPv,data.traceId))
+            bNotFindEvent = false
+            goto continue
+        end
+        -- 单用户PV判断
         ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,singleNumber:%s, totalMaxPv:%s traceId:%s",eventId,tbEvent.singleMaxpv,singleNumber,tbEvent.totalMaxPv,data.traceId))
-        if tbEvent.singleMaxpv <= singleNumber  or tbEvent.totalMaxPv <= eventNumber then
-            if tbEvent.totalMaxPv == nil or tbEvent.totalMaxPv == -1 then
-                ngx.log(ngx.DEBUG,string.format("event id:%s, totalMaxPv is -1",eventId))
-                bNotFindEvent = true
-                goto continue
-            end
+        if tbEvent.singleMaxpv ~= nil  and singleNumber > tbEvent.singleMaxpv then
             ngx.log(ngx.DEBUG,string.format("remove event id:%s traceId:%s",eventId,data.traceId))
             bNotFindEvent = false
             goto continue
         end
-
-        if tbEvent.threeSecLimit > 0 and threeSecNumber > tbEvent.threeSecLimit then
+        -- 30秒判断
+        if tbEvent.threeSecLimit ~=nil and threeSecNumber > tbEvent.threeSecLimit then
             ngx.log(ngx.DEBUG,string.format("event id:%s,three sec pv is more than 30:%s three sec limit:%s",eventId,threeSecNumber,tbEvent.threeSecLimit))
             bNotFindEvent = false
             goto continue
