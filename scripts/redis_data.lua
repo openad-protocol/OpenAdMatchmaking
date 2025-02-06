@@ -215,7 +215,7 @@ function RedisData:getEventCalc(zoneId,eventId,tp,traceId)
         ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", err)
         return tonumber(singleNumber),tonumber(eventNumber),0
     end
-    ngx.log(ngx.DEBUG,"singleNumber:",singleNumber,"  eventNumber:",eventNumber,"  eventPv:",eventPv)
+    ngx.log(ngx.DEBUG,"zondId:",zoneId,"eventId:",eventId," singleNumber:",singleNumber,"  eventNumber:",eventNumber,"  eventPv:",eventPv)
     return tonumber(singleNumber),tonumber(eventNumber),tonumber(eventPv)
 end
 
