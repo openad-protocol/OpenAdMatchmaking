@@ -702,6 +702,8 @@ function RedisData:getEventId(data,zoneId,publisherId)
         tbEvent = cjson.decode(eventElement.value)
         bNotFindEvent = true
         local singleNumberPv,totalMaxUv,totalMaxPv= self:getEventCalc(zoneId,eventId,"loginfo",data.traceId) -- 从loginfo取得pv/uv统计
+        ngx.log(ngx.DEBUG,string.format("eventId:%s, singleNumberPv:%s,totalMaxUv:%s,totalMaxPv:%s",
+            eventId,singleNumberPv,totalMaxUv,totalMaxPv))
         -- UV判断
         if tbEvent.totalMaxUv ~=nil and totalMaxUv > tbEvent.singleMaxUv then
             ngx.log(ngx.DEBUG,string.format("event id:%s, totalMaxUv:%s,tbEvent.totalMaxUv:%s, traceId:%s",
