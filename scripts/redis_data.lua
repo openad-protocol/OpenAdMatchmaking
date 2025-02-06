@@ -711,9 +711,9 @@ function RedisData:getEventId(data,zoneId,publisherId)
             goto continue
         end
         -- PV判断
-        if tbEvent.totalMaxpv ~= nil and totalMaxPv > tbEvent.totalMaxpv then
+        if tbEvent.totalMaxPv ~= nil and totalMaxPv > tbEvent.totalMaxPv then
             ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,tbEvent.totalMaxPv:%s,traceId:%s",
-                eventId,totalMaxPv,tbEvent.totalMaxpv,data.traceId))
+                eventId,totalMaxPv,tbEvent.totalMaxPv,data.traceId))
             bNotFindEvent = false
             goto continue
         end
