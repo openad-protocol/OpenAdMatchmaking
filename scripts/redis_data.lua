@@ -168,6 +168,7 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
         ngx.log(ngx.DEBUG, string.format("add Event Calc singleKey Failed : %s", err))
         return false
     end
+    self.redis:set_expire(singleKey,m_global:get_statistics_expire())
 
     -- event的uv计数
     local uvn,err = self.redis:pfadd(eventMaxUvKey,traceId)
@@ -175,6 +176,7 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
         ngx.log(ngx.DEBUG, string.format("add Event Calc eventMaxUvKey Failed: %s", err))
         return false
     end
+    self.redis:set_expire(singleKey,m_global:get_statistics_expire())
 
     -- event的pv计数
     local pvn,err = self.redis:incr(eventMaxPvKey)
