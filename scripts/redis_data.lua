@@ -156,9 +156,9 @@ end
 
 
 function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
-    local singleKey = m_global:get_appname() .. ":zone:" ..zoneId .. ":eventId:" .. eventId ..":" .. tp .. ":singleMaxpv:" .. traceId -- 按traceId计数
-    local eventMaxUvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
-    local eventMaxPvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
+    local singleKey = m_global:get_appname() .. ":event:" .. eventId ..":" .. tp .. ":singleMaxpv:" .. traceId -- 按traceId计数
+    local eventMaxUvKey = m_global:get_appname() .. ":event:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
+    local eventMaxPvKey = m_global:get_appname() .. ":event:" .. eventId .. ":".. tp .. ":eventMaxPv"  -- 按eventId计数
 
     -- 单个tracerId的key
     ngx.log(ngx.DEBUG,"singleKey is :",singleKey,"  eventMaxUvKey is :",eventMaxUvKey)
@@ -191,9 +191,9 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
 end
 
 function RedisData:getEventCalc(zoneId,eventId,tp,traceId)
-    local singleKey = m_global:get_appname() .. ":zone:" ..zoneId .. ":eventId:" .. eventId ..":" .. tp .. ":singleMaxpv:" .. traceId -- 按traceId计数
-    local eventMaxUvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
-    local eventMaxPvKey = m_global:get_appname() .. "zone:" .. zoneId .. ":eventId:" .. eventId .. ":".. tp .. ":eventMaxPv"  -- 按eventId计数
+    local singleKey = m_global:get_appname() .. ":event:" .. eventId ..":" .. tp .. ":singleMaxpv:" .. traceId -- 按traceId计数
+    local eventMaxUvKey = m_global:get_appname() .. ":event:" .. eventId .. ":".. tp .. ":eventMaxUv"  -- 按eventId计数
+    local eventMaxPvKey = m_global:get_appname() .. ":event:" .. eventId .. ":".. tp .. ":eventMaxPv"  -- 按eventId计数
     ngx.log(ngx.DEBUG,
         string.format("singleKey is:%s eventMaxUvKey is:%s eventMaxPvKey is:%s",
         singleKey,eventMaxUvKey,eventMaxPvKey)
@@ -586,7 +586,10 @@ function RedisData:getThreeIpPv(tp,ip)
     return tonumber(res),err
 end
 
-
+function RedisData:whiteList(publisherId)
+    -- local key = string.format("%s:publisherId:%s:whiteList",m_global:get_appname(),publisherId)
+    -- local res,err = self.redis:smembers(key)
+end
 
 function RedisData:getEventId(data,zoneId,publisherId)
     -- 全局规则判断
