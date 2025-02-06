@@ -168,7 +168,6 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
         ngx.log(ngx.DEBUG, string.format("add Event Calc singleKey Failed : %s", err))
         return false
     end
-    self.redis:set_expire(singleKey,m_global:get_statistics_expire())
 
     -- event的uv计数
     local uvn,err = self.redis:pfadd(eventMaxUvKey,traceId)
@@ -176,7 +175,6 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
         ngx.log(ngx.DEBUG, string.format("add Event Calc eventMaxUvKey Failed: %s", err))
         return false
     end
-    self.redis:set_expire(eventMaxUvKey,m_global:get_statistics_expire())
 
     -- event的pv计数
     local pvn,err = self.redis:incr(eventMaxPvKey)
@@ -184,7 +182,6 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
         ngx.log(ngx.DEBUG, string.format("add Event Calc eventMaxPvKey Failed: %s", err))
         return false
     end
-    self.redis:set_expire(eventMaxPvKey,m_global:get_statistics_expire())
 
     ngx.log(ngx.DEBUG,string.format("addEventCalc success zoneId:%s,singleNumber :%s,eventNumber:%s",zoneId,skn,uvn))
     return true
@@ -216,7 +213,7 @@ function RedisData:getEventCalc(zoneId,eventId,tp,traceId)
         ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", err)
         return tonumber(singleNumber),tonumber(eventNumber),0
     end
-    ngx.log(ngx.DEBUG,"singleNumber:",singleNumber,"  eventNumber:",eventNumber)
+    ngx.log(ngx.DEBUG,"singleNumber:",singleNumber,"  eventNumber:",eventNumber,"  eventPv:",eventPv)
     return tonumber(singleNumber),tonumber(eventNumber),tonumber(eventPv)
 end
 
@@ -703,7 +700,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
         bNotFindEvent = true
         local singleNumberPv,totalMaxUv,totalMaxPv= self:getEventCalc(zoneId,eventId,"loginfo",data.traceId) -- 从loginfo取得pv/uv统计
         ngx.log(ngx.DEBUG,string.format("eventId:%s, singleNumberPv:%s,totalMaxUv:%s,totalMaxPv:%s",
-            eventId,singleNumberPv,totalMaxUv,totalMaxPv))
+         eventId,singleNumberPv,totalMaxUv,totalMaxPv))
         -- UV判断
         if tbEvent.totalMaxUv ~=nil and totalMaxUv > tbEvent.singleMaxUv then
             ngx.log(ngx.DEBUG,string.format("event id:%s, totalMaxUv:%s,tbEvent.totalMaxUv:%s, traceId:%s",
