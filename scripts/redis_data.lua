@@ -203,6 +203,9 @@ function RedisData:getEventCalc(zoneId,eventId,tp,traceId)
         ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", err)
         return 0,0,0
     end
+    if eventPv == cjson.null then
+        eventPv = 0
+    end
     -- 单个tracerId的key
     local singleNumber,err = self.redis:get(singleKey)
     if err ~= nil or singleNumber == nil or singleNumber==cjson.null  then
