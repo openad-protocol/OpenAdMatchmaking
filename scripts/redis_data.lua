@@ -208,15 +208,21 @@ function RedisData:getEventCalc(zoneId,eventId,tp,traceId)
     end
     -- 单个tracerId的key
     local singleNumber,err = self.redis:get(singleKey)
-    if err ~= nil or singleNumber == nil or singleNumber==cjson.null  then
+    if err ~= nil or singleNumber == nil then
         ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", tp)
         return 0,0,tonumber(eventPv)
+    end
+    if singleNumber == cjson.null then
+        singleNumber = 0
     end
     -- event的uv计数
     local eventNumber,err = self.redis:pfcount(eventMaxUvKey)
     if err ~= nil or eventNumber == nil then
         ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", err)
         return tonumber(singleNumber),0,tonumber(eventPv)
+    end
+    if eventNumber == cjson.null then
+        eventNumber = 0
     end
     ngx.log(ngx.DEBUG,"zondId:",zoneId," eventId:",eventId," singleNumber:",singleNumber,"  eventNumber:",eventNumber,"  eventPv:",eventPv)
     return tonumber(singleNumber),tonumber(eventNumber),tonumber(eventPv)
