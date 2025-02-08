@@ -176,7 +176,6 @@ function RedisData:addEventCalc(zoneId,eventId,tp,traceId)
         ngx.log(ngx.DEBUG, string.format("add Event Calc eventMaxUvKey Failed: %s", err))
         return false
     end
-    self.redis:set_expire(singleKey,m_global:get_statistics_expire())
 
     -- event的pv计数
     local pvn,err = self.redis:incr(eventMaxPvKey)
@@ -199,29 +198,29 @@ function RedisData:getEventCalc(zoneId,eventId,tp,traceId)
      )
     -- event的pv计数
     local eventPv,err = self.redis:get(eventMaxPvKey)
-    if err ~= nil or eventPv == nil then
+    if err ~= nil then
         ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", err)
         return 0,0,0
     end
-    if eventPv == cjson.null then
+    if eventPv == nil or eventPv == cjson.null then
         eventPv = 0
     end
     -- 单个tracerId的key
     local singleNumber,err = self.redis:get(singleKey)
-    if err ~= nil or singleNumber == nil then
+    if err ~= nil then
         ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", tp)
         return 0,0,tonumber(eventPv)
     end
-    if singleNumber == cjson.null then
+    if singleNumber == nil or singleNumber == cjson.null then
         singleNumber = 0
     end
     -- event的uv计数
     local eventNumber,err = self.redis:pfcount(eventMaxUvKey)
-    if err ~= nil or eventNumber == nil then
+    if err ~= nil then
         ngx.log(ngx.DEBUG, "Failed to get event calc from Redis: ", err)
         return tonumber(singleNumber),0,tonumber(eventPv)
     end
-    if eventNumber == cjson.null then
+    if eventNumber == nil or eventNumber == cjson.null then
         eventNumber = 0
     end
     ngx.log(ngx.DEBUG,"zondId:",zoneId," eventId:",eventId," singleNumber:",singleNumber,"  eventNumber:",eventNumber,"  eventPv:",eventPv)
