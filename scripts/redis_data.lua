@@ -584,10 +584,8 @@ end
 
 function RedisData:getThreeIpPv(tp,ip)
     local key =string.format("%s:global:ip30s:%s:%s",m_global:get_appname(),tp,ip)
-    ngx.log(ngx.DEBUG,"getThreeIpPv key is :",key)
     local res,err = self.redis:get(key)
     if err ~=nil or res == nil or res == cjson.null then
-        ngx.log(ngx.ERR, "Failed to add ip to Redis: ", err)
         return 0,err
     end
     return tonumber(res),err
