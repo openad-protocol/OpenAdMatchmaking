@@ -531,6 +531,10 @@ function RedisData:getZonePvUv(zoneId,tp,ip)
     local threePvKey = string.format("%s:zone:%s:%s:%s:threePv",m_global:get_appname(),zoneId,ip,tp)
 
     ngx.log(ngx.DEBUG,"key is :",pvKey)
+    if self.redis == nil then
+        ngx.log(ngx.DEBUG,"redis is nil")
+        return 0,0,0
+    end
     local pvRes,err = self.redis:get(pvKey)
     if pvRes == nil or pvRes == cjson.null or err ~= nil then
         ngx.log(ngx.DEBUG, "Failed  get ip pv from Redis: ", err,"  data:",pvRes)
