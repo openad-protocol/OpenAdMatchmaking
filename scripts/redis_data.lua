@@ -25,7 +25,7 @@ function RedisData:new()
         ngx.log(ngx.DEBUG,"Failed to connect to Redis: ", err)
         return nil
     end
-    -- todo: 取过滤器方法 and 或是 or 或者是 not 
+    -- todo: 取过滤器方法 and 或是 or 或者是 not
     instance.redis = redis
     instance.filter = filter
     instance.useWeight = true
@@ -676,7 +676,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
     local threeSecNumber = 0
     local err = nil
     -- 取日的PV/UV数
-    local dayZonePvNumber ,dayZoneUvNumber,threeZonePvNumber= RedisData:getZonePvUv(zoneId,"loginfo",data.ip_address)
+    local dayZonePvNumber ,dayZoneUvNumber,threeZonePvNumber= self:getZonePvUv(zoneId,"loginfo",data.ip_address)
     ngx.log(ngx.DEBUG,string.format("dayZonePvNumber:%s dayZoneUvNumber:%s threeZonePvNumber:%s",
     dayZonePvNumber,dayZoneUvNumber,threeZonePvNumber))
 
