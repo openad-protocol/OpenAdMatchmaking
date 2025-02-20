@@ -466,7 +466,7 @@ function RedisData:dataStatisticsToRedis(zoneId,eventId,tp,ip,traceId)
     end
     self:addSession(zoneId,eventId,tp,traceId)
     self:addZoneEventIdUv(zoneId,eventId,tp,traceId)
-    self:addZonePvUv(zoneId,tp)
+    self:addZonePvUv(zoneId,tp,ip,traceId)
     self:addZoneEventIdPv(zoneId,eventId,tp)
     -- 以下两个是全局的
     self:addIpAddrPv(tp,ip)   -- 记录事件的IP PV数
