@@ -52,6 +52,7 @@ if str_utils.checkData(data) == false and data.eventId == "" then
     ngx.say(defalutMsg.generateResponse(10003,"Failed to get request args",nil))
     return
 end
+-- 验证loginfo max pv
 
 -- 验证追踪ID
 local ok,err = redisData:updateAdTraceHashElement(data,"loginfo")

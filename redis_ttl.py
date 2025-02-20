@@ -34,8 +34,10 @@ def create_redis_connection(host,port):
     try:
         redis_con= redis.StrictRedis(host=host, port=port, db=0)
         return redis_con
-    except Exception as e:
+    except RedisError as e:
         print(f"redis连接失败: {e}")
+    except Exception as e:
+        print(f"未知错误: {e}")
         return None
 
 def close_redis_connection(redis_con):

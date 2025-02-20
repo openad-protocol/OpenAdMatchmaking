@@ -476,11 +476,10 @@ function RedisData:dataStatisticsToRedis(zoneId,eventId,tp,ip,traceId)
     return true
 end
 
-function RedisData:addZonePvUv(zoneId,tp,traceId)
-    local pvKey = m_global:get_appname() .. ":zoneId" .. zoneId.. ":type" .. tp .. ":pv"
-    local uvKey = m_global:get_appname() .. ":zoneId" .. zoneId.. ":type" .. tp .. ":uv"
-
-    ngx.log(ngx.DEBUG,"key is :",pvKey)
+function RedisData:addZonePvUv(zoneId,tp,ip,traceId)
+    local pvKey = string.format("%s:zone:%s:%s:pv",m_global:get_appname(),zoneId,tp)
+    local uvKey = string.format("%s:zone:%s:%s:uv",m_global:get_appname(),zoneId,tp)
+    local threePvKey = string.format("%s:zone:%s:%s:%s:threePv",m_global:get_appname(),zoneId,ip,tp)
     local pvRes,err = self.redis:incr(pvKey)
     if pvRes == nil then
         ngx.log(ngx.DEBUG, "Failed to add ip to Redis: ", err)
@@ -495,14 +494,27 @@ function RedisData:addZonePvUv(zoneId,tp,traceId)
             ngx.log(ngx.DEBUG,"set expire success")
         end
     end
-    ngx.log(ngx.DEBUG,"key is :",uvKey)
-    local pvRes,err = self.redis:pfadd(uvKey,traceId)
-    if pvRes == nil then
+    local uvRes,err = self.redis:pfadd(uvKey,traceId)
+    if uvRes == nil then
         ngx.log(ngx.DEBUG, "Failed to add ip to Redis: ", err)
         return false
     end
-    if pvRes == 1 then
+    if uvRes == 1 then
         local res,err = self.redis:set_expire(uvKey,m_global:get_statistics_expire())
+        if res == nil then
+            ngx.log(ngx.DEBUG, "Failed to set expire to Redis: ", err)
+            return false
+        else
+            ngx.log(ngx.DEBUG,"set expire success")
+        end
+    end
+    local threeRes,err = self.redis:incr(threePvKey)
+    if threeRes == nil then
+        ngx.log(ngx.DEBUG, "Failed to add ip to Redis: ", err)
+        return false
+    end
+    if threeRes == 1 then
+        local res,err = self.redis:set_expire(threePvKey,m_global:get_three_statics_expire())
         if res == nil then
             ngx.log(ngx.DEBUG, "Failed to set expire to Redis: ", err)
             return false
@@ -510,25 +522,31 @@ function RedisData:addZonePvUv(zoneId,tp,traceId)
             ngx.log(ngx.DEBUG,"set expire success")
         end
     end
-
     return true
 end
 
-function RedisData:getZonePvUv(zoneId,tp)
-    local pvKey = m_global:get_appname() .. ":zoneId" .. zoneId.. ":type" .. tp .. ":pv"
-    local uvKey = m_global:get_appname() .. ":zoneId" .. zoneId.. ":type" .. tp .. ":uv"
+function RedisData:getZonePvUv(zoneId,tp,ip)
+    local pvKey = string.format("%s:zone:%s:%s:pv",m_global:get_appname(),zoneId,tp)
+    local uvKey = string.format("%s:zone:%s:%s:uv",m_global:get_appname(),zoneId,tp)
+    local threePvKey = string.format("%s:zone:%s:%s:%s:threePv",m_global:get_appname(),zoneId,ip,tp)
+
     ngx.log(ngx.DEBUG,"key is :",pvKey)
     local pvRes,err = self.redis:get(pvKey)
     if pvRes == nil then
         ngx.log(ngx.DEBUG, "Failed  get ip pv from Redis: ", err,"  data:",pvRes)
-        return 0,0
+        return 0,0,0
     end
     local uvRes,err = self.redis:pfcount(uvKey)
     if uvRes == nil then
         ngx.log(ngx.DEBUG, "Failed get ip uv to Redis: ", err,"  data:",uvRes)
-        return 0,0
+        return tonumber(pvRes),0,0
     end
-    return tonumber(pvRes),tonumber(uvRes)
+    local threePvRes,err = self.redis:get(threePvKey)
+    if threePvRes == nil then
+        ngx.log(ngx.DEBUG, "Failed  get ip pv from Redis: ", err,"  data:",pvRes)
+        return tonumber(pvRes),tonumber(uvRes),0
+    end
+    return tonumber(pvRes),tonumber(uvRes),tonumber(threePvRes)
 end
 
 function RedisData:addThreeIpUv(zoneId,tp,ip,traceId)
@@ -636,7 +654,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
     local eventArry = sys_utils.tableToArry(eventTable)
     ngx.log(ngx.DEBUG,string.format("EventTable:%s totalWeight:%s eventArry:%s",cjson.encode(eventTable),totalWeight,cjson.encode(eventArry)))
     -- 取得 zoneId 和 publisherId 的规则
-    local zoneKey = string.format("%s:rule",key)
+    local zoneKey = string.format("%s:rulev2",key)
     ngx.log(ngx.DEBUG,zoneKey)
     local rule,err = self.redis:get(zoneKey)
     local zoneRule = cjson.decode(rule)
@@ -645,23 +663,19 @@ function RedisData:getEventId(data,zoneId,publisherId)
     local threeSecNumber = 0
     local err = nil
     -- 取日的PV/UV数
-    local    dayZonePvNumber ,dayZoneUvNumber= 0,0
-    -- todo: 从redis取得zone的日PV/UV数
-    -- todo: end
-    ngx.log(ngx.DEBUG,string.format("dayZonePvNumber:%s dayZoneUvNumber:%s",dayZonePvNumber, dayZoneUvNumber))
-    -- 取IP的日PV
-    local dayPvNumber = 0
-    ngx.log(ngx.DEBUG,string.format("dayPvNumber: %s",dayPvNumber))
+    local dayZonePvNumber ,dayZoneUvNumber,threeZonePvNumber= RedisData:getZonePvUv(zoneId,"loginfo",data.ip_address)
+    ngx.log(ngx.DEBUG,string.format("dayZonePvNumber:%s dayZoneUvNumber:%s threeZonePvNumber:%s",
+    dayZonePvNumber,dayZoneUvNumber,threeZonePvNumber))
+
     -- 全局策略超过限量
-    local dayZonePvLimit = zoneRule.dayZonePvLimit or 100000
-    local dayZoneUvLimit = zoneRule.dayZoneUvLimit or 100000
-    local dayPvLimit = zoneRule.dayPvLimit or 100000
-    
-    ngx.log(ngx.DEBUG,string.format("dayZonePvLimit:%s dayZoneUvLimit:%s dayPvLimit:%s",dayZonePvLimit,dayZoneUvLimit,dayPvLimit))
-    if dayZonePvLimit <0 or dayZoneUvLimit <0 or dayPvLimit <0 then
-        else if dayZonePvNumber > dayZonePvLimit or dayZoneUvNumber > dayZoneUvLimit or dayPvNumber > dayPvLimit then
-            return nil,nil
-        end
+    local dayZonePvLimit = zoneRule.dayZonePvLimit or 10000000
+    local dayZoneUvLimit = zoneRule.dayZoneUvLimit or 10000000
+    local threeZoneSecLimit= zoneRule.dayPvLimit or 10000
+    ngx.log(ngx.DEBUG,string.format("dayZonePvLimit:%s dayZoneUvLimit:%s threeZoneSecLimit:%s",
+        dayZonePvLimit,dayZoneUvLimit,threeZoneSecLimit))
+    if threeSecNumber > threeZoneSecLimit or dayZonePvNumber > dayZonePvLimit or dayZoneUvNumber > dayZoneUvLimit then
+        ngx.log(ngx.DEBUG,"dayZonePvNumber or dayZoneUvNumber is more than limit")
+        return nil,nil
     end
 
     -- 全局策略配置为空，或是小于零，直接通过
@@ -852,6 +866,25 @@ function RedisData:getEventResource(eventId)
     local rId,rTb = sys_utils.getRandomKeyValueFromDict(resourceTable)
     ngx.log(ngx.DEBUG,"resourceId:",rId," resourceTable:",rTb)
     return rId,rTb
+end
+
+function RedisData:getZoneEventInfo(zoneId,publisherId,eventId)
+    local key = string.format("%s:zone:%s:%s",m_global:get_appname(),zoneId,publisherId)
+    local eventTable,err = self.redis:hget(key,eventId)  -- 对象是一个表
+    if err ~= nil then
+        return nil
+    end
+    if eventTable == nil or eventTable == cjson.null then
+        return nil
+    end
+    local status,decode_err = pcall(function ()
+        cjson.decode(eventTable)
+    end)
+    if not status then
+        ngx.log(ngx.DEBUG, "Failed to get event_id from Redis: ", decode_err)
+        return nil
+    end
+    return eventTable
 end
 
 -- 一次取多个keys
