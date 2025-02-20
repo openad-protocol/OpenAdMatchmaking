@@ -677,9 +677,9 @@ function RedisData:getEventId(data,zoneId,publisherId)
     dayZonePvNumber,dayZoneUvNumber,threeZonePvNumber))
 
     -- 全局策略超过限量
-    local dayZonePvLimit = zoneRule.dayZonePvLimit or 10000000
-    local dayZoneUvLimit = zoneRule.dayZoneUvLimit or 10000000
-    local threeZoneSecLimit= zoneRule.dayPvLimit or 10000
+    local dayZonePvLimit = zoneRule.dayZonePvLimit or 1000000000
+    local dayZoneUvLimit = zoneRule.dayZoneUvLimit or 1000000000
+    local threeZoneSecLimit= zoneRule.dayPvLimit or 1000000
     ngx.log(ngx.DEBUG,string.format("dayZonePvLimit:%s dayZoneUvLimit:%s threeZoneSecLimit:%s",
         dayZonePvLimit,dayZoneUvLimit,threeZoneSecLimit))
     if threeSecNumber > threeZoneSecLimit or dayZonePvNumber > dayZonePvLimit or dayZoneUvNumber > dayZoneUvLimit then
@@ -693,7 +693,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
     -- 平台tags过滤
     ngx.log(ngx.DEBUG,string.format("publisherRule: %s",cjson.encode(zoneRule.rule)))
     if  zoneRule.rule ~= nil and zoneRule.rule ~= "" and (type(zoneRule.rule) =="table" and  zoneRule.rule ~= cjson.null) then
-        for k,v in pairs(zoneRule) do
+        for k,v in pairs(zoneRule.rule) do
             zoneFilterResult = self.filter:ruleFilter(data,v)
             if zoneFilterResult== true then -- 只要有一条是通过的，就通过
                 break
