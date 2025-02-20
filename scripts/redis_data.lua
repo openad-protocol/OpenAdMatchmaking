@@ -647,6 +647,11 @@ function RedisData:getEventId(data,zoneId,publisherId)
     end
     -- redis 取得权重如果没有，则重新计算
     local weight_key = string.format("%s:zone:%s:%s:weight",m_global:get_appname(),zoneId,publisherId)
+    if self.redis == nil then
+        ngx.log(ngx.DEBUG,"reids client error")
+    else
+        ngx.log(ngx.DEBUG,"redis is connection success")
+    end
     local weight,err = self.redis:get(weight_key)
     if err ~= nil or weight == nil or weight == cjson.null then
         ngx.log(ngx.DEBUG, string.format("Failed to get key:%s weight from Redis null",weight_key))
