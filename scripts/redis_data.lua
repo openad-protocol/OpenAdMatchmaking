@@ -532,17 +532,17 @@ function RedisData:getZonePvUv(zoneId,tp,ip)
 
     ngx.log(ngx.DEBUG,"key is :",pvKey)
     local pvRes,err = self.redis:get(pvKey)
-    if pvRes == nil then
+    if pvRes == nil or pvRes == cjson.null or err ~= nil then
         ngx.log(ngx.DEBUG, "Failed  get ip pv from Redis: ", err,"  data:",pvRes)
         return 0,0,0
     end
     local uvRes,err = self.redis:pfcount(uvKey)
-    if uvRes == nil then
+    if uvRes == nil or uvRes == cjson.null or err ~= nil then
         ngx.log(ngx.DEBUG, "Failed get ip uv to Redis: ", err,"  data:",uvRes)
         return tonumber(pvRes),0,0
     end
     local threePvRes,err = self.redis:get(threePvKey)
-    if threePvRes == nil then
+    if threePvRes == nil or threePvRes == cjson.null or err ~= nil then
         ngx.log(ngx.DEBUG, "Failed  get ip pv from Redis: ", err,"  data:",pvRes)
         return tonumber(pvRes),tonumber(uvRes),0
     end
@@ -657,6 +657,10 @@ function RedisData:getEventId(data,zoneId,publisherId)
     local zoneKey = string.format("%s:rulev2",key)
     ngx.log(ngx.DEBUG,zoneKey)
     local rule,err = self.redis:get(zoneKey)
+    if rule == nil or rule == cjson.null or err ~= nil then
+        ngx.log(ngx.DEBUG, string.format("Failed to get rule from Redis: %s", err))
+        rule = "{}"
+    end
     local zoneRule = cjson.decode(rule)
 
     -- 取30秒内pv
