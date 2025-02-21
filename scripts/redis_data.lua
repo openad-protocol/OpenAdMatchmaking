@@ -675,7 +675,6 @@ function RedisData:getEventId(data,zoneId,publisherId)
     local zoneRule = cjson.decode(rule)
     ngx.log(ngx.DEBUG,string.format("rule is :%s", rule))
     -- 取30秒内pv
-    local threeSecNumber = 0
     local err = nil
     -- 取日的PV/UV数
     local dayZonePvNumber ,dayZoneUvNumber,threeZonePvNumber= self:getZonePvUv(zoneId,"loginfo",data.ip_address)
@@ -683,12 +682,18 @@ function RedisData:getEventId(data,zoneId,publisherId)
     dayZonePvNumber,dayZoneUvNumber,threeZonePvNumber))
 
     -- 全局策略超过限量
-    local dayZonePvLimit = zoneRule.totalMaxPv or 1000000000
-    local dayZoneUvLimit = zoneRule.totalMaxUv or 1000000000
-    local threeZoneSecLimit= zoneRule.threeSecLimit or 1000000
-    ngx.log(ngx.DEBUG,string.format("dayZonePvLimit:%s dayZoneUvLimit:%s threeZoneSecLimit:%s",
-        dayZonePvLimit,dayZoneUvLimit,threeZoneSecLimit))
-    if threeSecNumber >= threeZoneSecLimit or dayZonePvNumber >= dayZonePvLimit or dayZoneUvNumber >= dayZoneUvLimit then
+    if zoneRule.totalMaxPv == nil or zoneRule.totalMaxPv == cjson.null then
+        zoneRule.totalMaxPv = 1000000000
+    end
+    if zoneRule.threeSecLimit == nil or zoneRule.threeSecLimit == cjson.null then
+        zoneRule.threeSecLimit = 1000000
+    end
+    if zoneRule.totalMaxUv == nil or zoneRule.totalMaxUv == cjson.null then
+        zoneRule.totalMaxUv = 1000000000
+    end
+    ngx.log(ngx.DEBUG,string.format("totalMaxPv:%s totalMaxUv:%s threeSecLimit:%s",
+        zoneRule.totalMaxPv,zoneRule.totalMaxUv,zoneRule.threeSecLimit))
+    if threeZonePvNumber >= zoneRule.threeSecLimit or dayZonePvNumber >= zoneRule.totalMaxPv or dayZoneUvNumber >= zoneRule.totalMaxUv then
         ngx.log(ngx.DEBUG,"dayZonePvNumber or dayZoneUvNumber is more than limit")
         return nil,nil
     end
