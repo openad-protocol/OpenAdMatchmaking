@@ -706,9 +706,9 @@ function RedisData:getEventId(data,zoneId,publisherId)
     if  zoneRule.rule ~= nil and zoneRule.rule ~= "" and (type(zoneRule.rule) =="table" and  zoneRule.rule ~= cjson.null) then
         for k,v in pairs(zoneRule.rule) do
             zoneFilterResult = self.filter:ruleFilter(data,v)
-            -- if zoneFilterResult== false then -- 只要有一条是通过的，就通过
-            -- -- todo
-            -- end
+            if zoneFilterResult == true then -- 只要有一条是通过的，就通过
+                break
+            end
             ngx.log(ngx.DEBUG,string.format("zoneRule:%s  user data is:%s",cjson.encode(v),cjson.encode(data)))
         end
         if zoneFilterResult == false then
