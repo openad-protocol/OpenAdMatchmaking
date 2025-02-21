@@ -683,12 +683,12 @@ function RedisData:getEventId(data,zoneId,publisherId)
     dayZonePvNumber,dayZoneUvNumber,threeZonePvNumber))
 
     -- 全局策略超过限量
-    local dayZonePvLimit = zoneRule.dayZonePvLimit or 1000000000
-    local dayZoneUvLimit = zoneRule.dayZoneUvLimit or 1000000000
-    local threeZoneSecLimit= zoneRule.dayPvLimit or 1000000
+    local dayZonePvLimit = zoneRule.totalMaxPv or 1000000000
+    local dayZoneUvLimit = zoneRule.totalMaxUv or 1000000000
+    local threeZoneSecLimit= zoneRule.threeSecLimit or 1000000
     ngx.log(ngx.DEBUG,string.format("dayZonePvLimit:%s dayZoneUvLimit:%s threeZoneSecLimit:%s",
         dayZonePvLimit,dayZoneUvLimit,threeZoneSecLimit))
-    if threeSecNumber > threeZoneSecLimit or dayZonePvNumber > dayZonePvLimit or dayZoneUvNumber > dayZoneUvLimit then
+    if threeSecNumber >= threeZoneSecLimit or dayZonePvNumber >= dayZonePvLimit or dayZoneUvNumber >= dayZoneUvLimit then
         ngx.log(ngx.DEBUG,"dayZonePvNumber or dayZoneUvNumber is more than limit")
         return nil,nil
     end
