@@ -480,6 +480,9 @@ function RedisData:addZonePvUv(zoneId,tp,ip,traceId)
     local pvKey = string.format("%s:zone:%s:%s:pv",m_global:get_appname(),zoneId,tp)
     local uvKey = string.format("%s:zone:%s:%s:uv",m_global:get_appname(),zoneId,tp)
     local threePvKey = string.format("%s:zone:%s:%s:%s:threePv",m_global:get_appname(),zoneId,ip,tp)
+    ngx.log(ngx.DEBUG,"pvkey is :",pvKey)
+    ngx.log(ngx.DEBUG,"uvkey is :",uvKey)
+    ngx.log(ngx.DEBUG,"threePvKey is :",threePvKey)
     local pvRes,err = self.redis:incr(pvKey)
     if pvRes == nil then
         ngx.log(ngx.DEBUG, "Failed to add ip to Redis: ", err)
@@ -529,6 +532,9 @@ function RedisData:getZonePvUv(zoneId,tp,ip)
     local pvKey = string.format("%s:zone:%s:%s:pv",m_global:get_appname(),zoneId,tp)
     local uvKey = string.format("%s:zone:%s:%s:uv",m_global:get_appname(),zoneId,tp)
     local threePvKey = string.format("%s:zone:%s:%s:%s:threePv",m_global:get_appname(),zoneId,ip,tp)
+    ngx.log(ngx.DEBUG,"pvkey is :",pvKey)
+    ngx.log(ngx.DEBUG,"uvkey is :",uvKey)
+    ngx.log(ngx.DEBUG,"threePvKey is :",threePvKey)
 
     ngx.log(ngx.DEBUG,"key is :",pvKey)
     local pvRes,err = self.redis:get(pvKey)
@@ -695,9 +701,9 @@ function RedisData:getEventId(data,zoneId,publisherId)
     if  zoneRule.rule ~= nil and zoneRule.rule ~= "" and (type(zoneRule.rule) =="table" and  zoneRule.rule ~= cjson.null) then
         for k,v in pairs(zoneRule.rule) do
             zoneFilterResult = self.filter:ruleFilter(data,v)
-            if zoneFilterResult== true then -- 只要有一条是通过的，就通过
-                break
-            end
+            -- if zoneFilterResult== false then -- 只要有一条是通过的，就通过
+            -- -- todo
+            -- end
             ngx.log(ngx.DEBUG,string.format("zoneRule:%s  user data is:%s",cjson.encode(v),cjson.encode(data)))
         end
         if zoneFilterResult == false then
