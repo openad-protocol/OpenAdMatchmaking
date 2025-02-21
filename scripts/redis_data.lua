@@ -739,21 +739,21 @@ function RedisData:getEventId(data,zoneId,publisherId)
         ngx.log(ngx.DEBUG,string.format("eventId:%s, singleNumberPv:%s,totalMaxUv:%s,totalMaxPv:%s",
          eventId,singleNumberPv,totalMaxUv,totalMaxPv))
         -- UV判断
-        if tbEvent.totalMaxUv ~=nil and totalMaxUv > tbEvent.singleMaxUv then
+        if tbEvent.totalMaxUv ~=nil and totalMaxUv >= tbEvent.singleMaxUv then
             ngx.log(ngx.DEBUG,string.format("event id:%s, totalMaxUv:%s,tbEvent.totalMaxUv:%s, traceId:%s",
                 eventId,totalMaxUv,tbEvent.totalMaxUv,data.traceId))
             bNotFindEvent = false
             goto continue
         end
         -- PV判断
-        if tbEvent.totalMaxPv ~= nil and totalMaxPv > tbEvent.totalMaxPv then
+        if tbEvent.totalMaxPv ~= nil and totalMaxPv >= tbEvent.totalMaxPv then
             ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,tbEvent.totalMaxPv:%s,traceId:%s",
                 eventId,totalMaxPv,tbEvent.totalMaxPv,data.traceId))
             bNotFindEvent = false
             goto continue
         end
         -- 单用户PV判断
-        if tbEvent.singleMaxpv ~= nil  and singleNumberPv > tbEvent.singleMaxpv then
+        if tbEvent.singleMaxpv ~= nil  and singleNumberPv >= tbEvent.singleMaxpv then
             ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,singleNumber:%s",
                 eventId,tbEvent.singleMaxpv,singleNumberPv))
             bNotFindEvent = false
