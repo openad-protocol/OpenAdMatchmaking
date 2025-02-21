@@ -765,7 +765,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
             goto continue
         end
         -- 30秒判断
-        if tbEvent.threeSecLimit ~=nil and threeSecNumber >= tbEvent.threeSecLimit then
+        if tbEvent.threeSecLimit ~=nil and threeZonePvNumber >= tbEvent.threeSecLimit then
             ngx.log(ngx.DEBUG,string.format("event id:%s,three sec pv is more than 30:%s three sec limit:%s",eventId,threeSecNumber,tbEvent.threeSecLimit))
             bNotFindEvent = false
             goto continue
