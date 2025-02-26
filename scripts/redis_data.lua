@@ -784,7 +784,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
         ::continue::
         if not bNotFindEvent then
             table.remove(eventArry,arrayIndex)
-            totalWeight = totalWeight - tbEvent.weight
+            totalWeight = totalWeight - tbEvent.weight or 1
             ngx.log(ngx.DEBUG,string.format("continue event id:%s",eventId))
         end
     until bNotFindEvent
@@ -920,6 +920,19 @@ function RedisData:getMultipleItems(key, items)
         results[item] = res[i]
     end
     return results
+end
+
+function RedisData:getPublisherInfo(publisherId)
+    local key = string.format("%s:publishers",m_global:get_appname())
+    local publisherInfo,err = self.redis:hget(key,publisherId)
+    if err ~= nil then
+        return nil
+    end
+    if publisherInfo == nil or publisherInfo == cjson.null then
+        return nil
+    end
+    ngx.log(ngx.DEBUG,"publisherInfo:",publisherInfo)
+    return cjson.decode(publisherInfo)
 end
 
 return RedisData

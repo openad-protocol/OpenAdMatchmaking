@@ -66,5 +66,21 @@ data.ip_address = ipAddress
 data.country = ipdatabases:getCountry(ipAddress) or ''
 nats.publisher_message("ad_info.ad_in_call", cjson.encode(data))
 
+-- 是否订阅消息
+local publsiherInfo = redisData:getPublisherInfo(data.publisherId)
+if publsiherInfo ~= nil then
+    if publsiherInfo.sub == 1 then
+        local publisherData = {
+            publisherId = data.publisherId,
+            zoneId = data.zoneId,
+            eventId = data.eventId,
+            traceId = data.traceId,
+            ipAddress = ipAddress,
+            country = data.country,
+        }
+        nats.publisher_message("ad_info.publisherSub", cjson.encode(publisherData))
+    end
+end
+
 -- 返回成功
 ngx.say(defalutMsg.generateResponseLogClick())

@@ -1,0 +1,8 @@
+
+/install
+/logs
+config/dev.toml
+config/prod.toml
+libmaxminddb-1.1.2.tar.gz
+/.idea
+/libmaxminddb-1.1.2
