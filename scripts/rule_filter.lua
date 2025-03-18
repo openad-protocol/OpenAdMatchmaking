@@ -107,7 +107,7 @@ function RuleFilter:ruleFilter(data,rulesInfo)
     end
 
     if rule.type == "language" then -- 语言规则
-        ngx.log(ngx.INFO,"run language rule.tags: ",rule.tags)
+        ngx.log(ngx.INFO,string.format("run language rule.tags: %s, language data %s",rule.tags,data.language))
         if rule.tags ~= nil then
             if ruleMethod then
                 languageRule = self:filter(rule.tags,data.language)
