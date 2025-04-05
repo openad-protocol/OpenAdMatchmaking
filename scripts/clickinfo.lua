@@ -24,10 +24,16 @@ local function get_args()
         zoneId = tostring(args.zoneId) or '',
         publisherId = tostring(args.publisherId) or '',
         eventId = tostring(args.eventId) or '',
+        -- telegram
         userId = args.userId or '',
         firstName = args.firstName or '',
         lastName = args.lastName or '',
         userName = args.userName or '',
+
+        -- Line
+        channeId = args.channeId or '',
+        liffId = args.liffId or '',
+        displayName = args.displayName or '',
         language = args.language or '',
         version = args.version or '',
         channel = args.channel or '',

@@ -36,10 +36,17 @@ local function get_args()
         zoneId = tostring(args.zoneId) or '',
         publisherId = tostring(args.publisherId) or '',
         eventId = tostring(args.eventId) or '',
+
+        --telegram
         userId = args.userId or '',  -- telegram identifier
         firstName = args.firstName or '',
         lastName = args.lastName or '',
         userName = args.userName or '',
+
+        -- Line
+        channeId = args.channeId or '',
+        liffId = args.liffId or '',
+        displayName = args.displayName or '',
         --timeStamp = tonumber(args.timeStamp) or 0,
         timeStamp = tostring(ngx.now()),
         signature = args.signature or '',
