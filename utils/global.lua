@@ -6,6 +6,7 @@ local appversion
 local redisconf
 local redis_queueconf
 local natsconf
+local nats_partner_conf
 local maxminddb_conf
 local statistics_expire
 local three_sec_expire
@@ -61,7 +62,15 @@ function _M:get_nats_conf()
         natsconf.port = NATS_QUQEUE_CONFIG.port
     end
     return natsconf
-    
+end
+
+function _M:get_nats_partner_conf()
+    if not nats_partner_conf then
+        nats_partner_conf = {}
+        nats_partner_conf.host = NATS_QUQEUE_PARTNER_CONFIG.ip
+        nats_partner_conf.port = NATS_QUQEUE_PARTNER_CONFIG.port
+    end
+    return nats_partner_conf
 end
 
 function _M:get_redis_queue_conf()

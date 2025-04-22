@@ -57,6 +57,9 @@ ngx.log(ngx.DEBUG, "QUEUE_CONFIG=", cjson.encode(QUEUE_CONFIG))
 NATS_QUQEUE_CONFIG = config.nats
 ngx.log(ngx.DEBUG, "NATS_QUQEUE_CONFIG=", cjson.encode(NATS_QUQEUE_CONFIG))
 
+NATS_QUQEUE_PARTNER_CONFIG = config.nats_partner
+ngx.log(ngx.DEBUG, "NATS_QUQEUE_CONFIG=", cjson.encode(NATS_QUQEUE_CONFIG))
+
 MAXMINDDB_CONFIG = config.maxminddb
 ngx.log(ngx.DEBUG, "MAXMINDDB_CONFIG=", cjson.encode(MAXMINDDB_CONFIG))
 

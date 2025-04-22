@@ -682,13 +682,13 @@ function RedisData:getEventId(data,zoneId,publisherId)
     dayZonePvNumber,dayZoneUvNumber,threeZonePvNumber))
 
     -- 全局策略超过限量
-    if zoneRule.totalMaxPv == nil or zoneRule.totalMaxPv == cjson.null then
+    if zoneRule.totalMaxPv == nil or zoneRule.totalMaxPv == cjson.null or zoneRule.totalMaxPv == -1  then
         zoneRule.totalMaxPv = 1000000000
     end
-    if zoneRule.threeSecLimit == nil or zoneRule.threeSecLimit == cjson.null then
+    if zoneRule.threeSecLimit == nil or zoneRule.threeSecLimit == cjson.null or zoneRule.totalMaxPv == -1 then
         zoneRule.threeSecLimit = 1000000
     end
-    if zoneRule.totalMaxUv == nil or zoneRule.totalMaxUv == cjson.null then
+    if zoneRule.totalMaxUv == nil or zoneRule.totalMaxUv == cjson.null or zoneRule.totalMaxPv == -1 then
         zoneRule.totalMaxUv = 1000000000
     end
     ngx.log(ngx.DEBUG,string.format("totalMaxPv:%s totalMaxUv:%s threeSecLimit:%s",
@@ -751,14 +751,14 @@ function RedisData:getEventId(data,zoneId,publisherId)
             goto continue
         end
         -- PV判断
-        if tbEvent.totalMaxPv ~= nil and totalMaxPv >= tbEvent.totalMaxPv then
+        if tbEvent.totalMaxPv ~= nil and tbEvent.totalMaxPv ~= cjson.null and tbEvent.totalMaxPv ~= -1 and totalMaxPv >= tbEvent.totalMaxPv then
             ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,tbEvent.totalMaxPv:%s,traceId:%s",
                 eventId,totalMaxPv,tbEvent.totalMaxPv,data.traceId))
             bNotFindEvent = false
             goto continue
         end
         -- 单用户PV判断
-        if tbEvent.singleMaxpv ~= nil  and singleNumberPv >= tbEvent.singleMaxpv then
+        if tbEvent.singleMaxpv ~= nil and tbEvent.singleMaxpv ~= cjson.null and tbEvent.singleMaxpv ~= -1 and singleNumberPv >= tbEvent.singleMaxpv then
             ngx.log(ngx.DEBUG,string.format("event id:%s, singleMaxpv:%s,singleNumber:%s",
                 eventId,tbEvent.singleMaxpv,singleNumberPv))
             bNotFindEvent = false
