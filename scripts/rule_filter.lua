@@ -255,7 +255,7 @@ function RuleFilter:selectAdByWeight(eventDatas,randomWeight)
     for index, eventData in ipairs(eventDatas) do
         local tb = cjson.decode(eventData.value)
         cumulativeWeight = cumulativeWeight + (tb.weight or 1)
-        if cumulativeWeight > randomWeight then -- 计算数大于随机权重
+        if cumulativeWeight >= randomWeight then -- 计算数大于随机权重
             return index,eventData
         end
     end
