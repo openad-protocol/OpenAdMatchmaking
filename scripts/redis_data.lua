@@ -657,7 +657,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
     local weight,err = self.redis:get(weight_key)
     if err ~= nil or weight == nil or weight == cjson.null then
         ngx.log(ngx.DEBUG, string.format("Failed to get key:%s weight from Redis null",weight_key))
-        weight = 5
+        weight = 1 
         -- return nil,err
     end
     ngx.log(ngx.DEBUG,string.format("weight:%s",weight))
@@ -922,7 +922,7 @@ function RedisData:getMultipleItems(key, items)
     return results
 end
 
-function RedisData:getPublisherInfo(publisherId)
+function RedisData:(publisherId)
     local key = string.format("%s:publishers",m_global:get_appname())
     local publisherInfo,err = self.redis:hget(key,publisherId)
     if err ~= nil then
