@@ -76,7 +76,7 @@ nats.publisher_message("ad_info.ad_in_call", cjson.encode(data))
 local publsiherInfo = redisData:getPublisherInfo(data.publisherId)
 if publsiherInfo ~= nil then
     if publsiherInfo.sub == 1 then
-        local topic = string.format("ad_info.partner_%s",string(data.publisherId))
+        local topic = string.format("ad_info.partner_cb_%s",string(data.publisherId))
         local publisherData = {
             publisherId = data.publisherId,
             zoneId = data.zoneId,
