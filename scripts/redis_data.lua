@@ -647,6 +647,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
         ngx.log(ngx.ERR, string.format("Failed to get event_id from Redis: %s", err))
         return nil,err
     end
+    
     -- redis 取得权重如果没有，则重新计算
     local weight_key = string.format("%s:zone:%s:%s:weight",m_global:get_appname(),zoneId,publisherId)
     if self.redis == nil then

@@ -1,3 +1,5 @@
+require("libs.functions")
+
 -- 取当前时间截
 local function getCurrentTimestamp()
     -- 获取当前系统时间戳
@@ -87,6 +89,8 @@ end
 
 
 local function tableToArry(dict)
+    -- 乱序
+    dict = table.shuffle(dict)
     local keys = {}
     for key,value in pairs(dict) do
         table.insert(keys, {id=key,value=value})
