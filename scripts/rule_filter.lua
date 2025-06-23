@@ -70,14 +70,15 @@ end
 
 
 function RuleFilter:ruleFilter(data,rulesInfo)
+    local infoMsg = ""
     ngx.log(ngx.INFO,string.format("data: %s,rules:%s",cjson.encode(data),cjson.encode(rulesInfo)))
     if rulesInfo== nil or rulesInfo==cjson.null or type(rulesInfo) ~="table" then
         ngx.log(ngx.ERR, "rulesInfo is not table: ", rulesInfo)
-        return true
+        return true,infoMsg
     end
     if type(data) ~= "table"  then
         ngx.log(ngx.ERR, "in date is not table: ", data)
-        return false
+        return false,infoMsg
     end
 
     local ruleMethod = self.ruleMethod -- true 为and false 为or
@@ -103,7 +104,12 @@ function RuleFilter:ruleFilter(data,rulesInfo)
         if rule.reverse ~= nil and rule.reverse == 1 then
             countryRule = not countryRule
         end
-        if countryRule then ngx.log(ngx.INFO,"run country rule allow!") else ngx.log(ngx.INFO,"country rule deny!") end
+        if countryRule then 
+            ngx.log(ngx.INFO,"run country rule allow!") 
+        else 
+            ngx.log(ngx.INFO,"country rule deny!") 
+            infoMsg = string.format("%s country deny.", infoMsg)
+        end   
     end
 
     if rule.type == "language" then -- 语言规则
@@ -120,7 +126,12 @@ function RuleFilter:ruleFilter(data,rulesInfo)
             ngx.log(ngx.DEBUG,string.format("languageRule:%s,reverse:%s",tostring(languageRule),tostring(rule.reverse)))
             languageRule = not languageRule
         end
-        if languageRule then ngx.log(ngx.INFO,string.format("run language rule allow,is bool:%s!",languageRule)) else ngx.log(ngx.INFO,string.format("language rule deny! bool %s",languageRule)) end
+        if languageRule then 
+            ngx.log(ngx.INFO,string.format("run language rule allow,is bool:%s!",languageRule)) 
+        else 
+            ngx.log(ngx.INFO,string.format("language rule deny! bool %s",languageRule)) 
+            infoMsg = string.format("%s language deny.", infoMsg)
+        end         
     end
 
     if rule.type == "platform" then -- 平台规则
@@ -135,7 +146,12 @@ function RuleFilter:ruleFilter(data,rulesInfo)
         if rule.reverse ~= nil and rule.reverse == 1 then
             platformRule = not platformRule
         end
-        if platformRule then ngx.log(ngx.INFO,"run platform rule allow!") else ngx.log(ngx.INFO,"platform rule deny!") end
+        if platformRule then 
+            ngx.log(ngx.INFO,"run platform rule allow!") 
+        else 
+            ngx.log(ngx.INFO,"platform rule deny!") 
+            infoMsg = string.format("%s platform deny.", infoMsg)
+        end         
     end
 
     if rule.type == "datetime" then -- 时间规则
@@ -158,7 +174,12 @@ function RuleFilter:ruleFilter(data,rulesInfo)
             if rule.reverse ~= nil and rule.reverse == 1 then
                 datetimeRule = not datetimeRule
             end
-            if datetimeRule then ngx.log(ngx.INFO,"run datetime rule allow!") else ngx.log(ngx.INFO,"datetime rule deny!") end
+            if datetimeRule then 
+                ngx.log(ngx.INFO,"run datetime rule allow!") 
+            else 
+                ngx.log(ngx.INFO,"datetime rule deny!") 
+                infoMsg = string.format("%s datetime deny.", infoMsg)
+            end               
             end
         end
 
@@ -171,7 +192,12 @@ function RuleFilter:ruleFilter(data,rulesInfo)
         if rule.reverse ~= nil and rule.reverse == 1 then
             weekRule = not weekRule
         end
-        if weekRule then ngx.log(ngx.INFO,"run week rule allow!") else ngx.log(ngx.INFO,"datetime week deny!") end
+        if weekRule then 
+            ngx.log(ngx.INFO,"run week rule allow!") 
+        else 
+            ngx.log(ngx.INFO,"datetime week deny!") 
+            infoMsg = string.format("%s week deny.", infoMsg)
+        end             
     end
 
     if rule.type == "loopTime" then -- 循环时间
@@ -207,7 +233,12 @@ function RuleFilter:ruleFilter(data,rulesInfo)
                     loopTimeRule = not loopTimeRule
                 end
                 if loopTimeRule then -- 命中一个条件就退出
-                    if loopTimeRule then ngx.log(ngx.INFO,"run loopTime rule allow!") else ngx.log(ngx.INFO,"loopTime week deny!") end
+                    if loopTimeRule then 
+                        ngx.log(ngx.INFO,"run loopTime rule allow!") 
+                    else 
+                        ngx.log(ngx.INFO,"loopTime week deny!") 
+                        infoMsg = string.format("%s loopTime deny.", infoMsg)
+                    end     
                 end
             end
         end
@@ -222,14 +253,19 @@ function RuleFilter:ruleFilter(data,rulesInfo)
         if rule.reverse ~= nil and rule.reverse == 1 then
             channelRule = not channelRule
         end
-        if channelRule then ngx.log(ngx.INFO,"run channel rule allow!") else ngx.log(ngx.INFO,"channel channel deny! user channel:",data.channel," zone allow channel:",rule.tags) end
+        if channelRule then 
+            ngx.log(ngx.INFO,"run channel rule allow!") 
+        else 
+            ngx.log(ngx.INFO,"channel channel deny! user channel:",data.channel," zone allow channel:",rule.tags) 
+            infoMsg = string.format("%s channel deny.", infoMsg)
+        end            
     end
     ngx.log(ngx.INFO,string.format("countryRule:%s,language rule:%s, platform rule%s,datetime rule%s, week rule:%s,loopTime rule:%s,channel rule:%s",
             tostring(countryRule),tostring(languageRule),tostring(platformRule),tostring(datetimeRule),tostring(weekRule),tostring(loopTimeRule),tostring(channelRule)))
     if ruleMethod then
-        return countryRule and languageRule and platformRule and datetimeRule and weekRule and loopTimeRule and channelRule
+        return countryRule and languageRule and platformRule and datetimeRule and weekRule and loopTimeRule and channelRule,infoMsg        
     else
-        return countryRule or languageRule or platformRule or datetimeRule or weekRule or loopTimeRule and channelRule
+        return countryRule or languageRule or platformRule or datetimeRule or weekRule or loopTimeRule and channelRule, infoMsg        
     end
 end
 

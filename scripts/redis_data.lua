@@ -719,6 +719,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
     end
     local bNotFindEvent = true
     local eventId,tbEvent
+    local infoMsg = ""
     -- 事件过滤
     repeat
         local arrayIndex,eventElement
@@ -775,7 +776,11 @@ function RedisData:getEventId(data,zoneId,publisherId)
         -- 判断event的rule
         tbEventRule = cjson.decode(tbEvent.rule)
         for k,v in ipairs(tbEventRule) do
-            local ruleFilterResult = self.filter:ruleFilter(data,v)
+            local ruleFilterResult 
+            local _infoMsg
+            ruleFilterResult,_infoMsg= self.filter:ruleFilter(data,v)
+            infoMsg = string.format("%s %s",infoMsg,_infoMsg or "")
+            ngx.log(ngx.DEBUG,string.format("ruleFilterResult:%s infoMsg:%s",ruleFilterResult,infoMsg))
             if ruleFilterResult == false then
                 ngx.log(ngx.DEBUG,string.format("remove event id:%s rule filter failed:%s",eventId,cjson.encode(v)))
                 bNotFindEvent = false
@@ -790,7 +795,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
         end
     until bNotFindEvent
     ngx.log(ngx.DEBUG,string.format("return eventId:%s tbEvent:%s,traceId:%s",eventId,cjson.encode(tbEvent),data.traceId))
-    return eventId,tbEvent
+    return eventId,tbEvent,infoMsg
 end
 
 -- 设置广告追踪器的hash
@@ -934,6 +939,17 @@ function RedisData:getPublisherInfo(publisherId)
     end
     ngx.log(ngx.DEBUG,"publisherInfo:",publisherInfo)
     return cjson.decode(publisherInfo)
+end
+
+function RedisData:getGlobalConfig()
+    local key = string.format("%s:GlobalConfig",m_global:get_appname())
+    local res,err = self.redis:get(key)
+    if err ~= nil or res == nil or res == cjson.null then
+        ngx.log(ngx.DEBUG, "Failed to get global config from Redis: ", err)
+        return nil,false
+    end
+    ngx.log(ngx.DEBUG,"getGlobalConfig success:",cjson.encode(res))
+    return cjson.decode(res),true
 end
 
 return RedisData
