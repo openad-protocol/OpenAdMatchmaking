@@ -699,6 +699,10 @@ function RedisData:getEventId(data,zoneId,publisherId)
         return nil,nil
     end
 
+    -- 取得zone google config
+    local zoneRuleInfos = {}
+    zoneRuleInfos.googleEnable = zoneRule.googleEnable or false
+    zoneRuleInfos.adUnitName = zoneRule.adUnitName or ""
     -- 全局策略配置为空，或是小于零，直接通过
     local zoneFilterResult = false
 
@@ -714,7 +718,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
         end
         if zoneFilterResult == false then
             ngx.log(ngx.DEBUG,"zone filter failed")
-            return nil,nil
+            return nil,nil,nil,nil
         end
     end
     local bNotFindEvent = true
@@ -736,7 +740,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
         end
         if type(eventElement) ~= "table" then
             ngx.log(ngx.DEBUG,string.format("eventElement is not table:%s,infoMsg:%s",eventElement,infoMsg))
-            return nil,nil,infoMsg
+            return nil,nil,infoMsg,zoneRuleInfos
         end
         ngx.log(ngx.DEBUG,string.format("arrayIndex:%s eventElement:%s",arrayIndex,cjson.encode(eventElement)))
         eventId = eventElement.id
@@ -795,7 +799,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
         end
     until bNotFindEvent
     ngx.log(ngx.DEBUG,string.format("return eventId:%s tbEvent:%s,traceId:%s",eventId,cjson.encode(tbEvent),data.traceId))
-    return eventId,tbEvent,infoMsg
+    return eventId,tbEvent,infoMsg,zoneRuleInfos
 end
 
 -- 设置广告追踪器的hash

@@ -91,15 +91,18 @@ if not bConfigExists then
     ngx.log(ngx.DEBUG,"getGlobalConfig error:",err)
     globalConfig = {}
 end
-
 ngx.log(ngx.DEBUG,string.format("data:%s,ipAddress:%s",cjson.encode(data),ipAddress))
--- 取得有效事件
-local eventId,eventData,infoMsg = redisData:getEventId(data,data.zoneId,data.publisherId)
+-- 取得有效事件和配置
+local eventId,eventData,infoMsg,zoneRuleInfos = redisData:getEventId(data,data.zoneId,data.publisherId)
+local configRules = {}
+configRules.GlobalConfig = globalConfig
+configRules.ZoneConfig =  zoneRuleInfos
+
 if eventId == nil or eventData == nil then
     ngx.log(ngx.DEBUG,string.format("no ads available,infoMsg:%s",infoMsg))
     -- 记录无效访问
     nats.publisher_message("ad_info.get_ad_miss",cjson.encode(data))
-    ngx.say(defalutMsg.generateResponse(10002,string.format("no ads available,infoMsg:%s", infoMsg),globalConfig))
+    ngx.say(defalutMsg.generateResponse(10002,string.format("no ads available,infoMsg:%s", infoMsg),configRules))
     return
 end
 
