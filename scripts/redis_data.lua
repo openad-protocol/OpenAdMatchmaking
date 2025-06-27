@@ -736,7 +736,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
         end
         if type(eventElement) ~= "table" then
             ngx.log(ngx.DEBUG,string.format("eventElement is not table:%s",eventElement))
-            return nil,nil
+            return nil,nil,infoMsg
         end
         ngx.log(ngx.DEBUG,string.format("arrayIndex:%s eventElement:%s",arrayIndex,cjson.encode(eventElement)))
         eventId = eventElement.id
