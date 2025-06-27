@@ -92,14 +92,14 @@ if eventId == nil or eventData == nil then
     ngx.log(ngx.DEBUG,string.format("no ads available,infoMsg:%s",infoMsg))
     -- 记录无效访问
     nats.publisher_message("ad_info.get_ad_miss",cjson.encode(data))
-    ngx.say(defalutMsg.generateResponse(10002,string.format("no ads available,infoMsg:%s"infoMsg),nil))
+    ngx.say(defalutMsg.generateResponse(10002,string.format("no ads available,infoMsg:%s", infoMsg),nil))
     return
 end
 
-if eventId == "" then
-    ngx.say(defalutMsg.generateResponse(10003,string.format("no ads available,infoMsg:%s",infoMsg),nil))
-    return
-end
+-- if eventId == "" then
+--     ngx.say(defalutMsg.generateResponse(10003,string.format("no ads available,infoMsg:%s",infoMsg),nil))
+--     return
+-- end
 
 data.eventId = eventId
 ngx.log(ngx.DEBUG,"event id:",eventId,"    event data:",cjson.encode(eventData))
