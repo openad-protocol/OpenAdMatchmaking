@@ -791,7 +791,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
         if not bNotFindEvent then
             table.remove(eventArry,arrayIndex)
             totalWeight = totalWeight - tbEvent.weight or 1
-            ngx.log(ngx.DEBUG,string.format("continue event id:%s",eventId))
+            ngx.log(ngx.DEBUG,string.format("continue event id:%s,infoMsg:%s",eventId,infoMsg))
         end
     until bNotFindEvent
     ngx.log(ngx.DEBUG,string.format("return eventId:%s tbEvent:%s,traceId:%s",eventId,cjson.encode(tbEvent),data.traceId))
