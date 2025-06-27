@@ -719,7 +719,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
     end
     local bNotFindEvent = true
     local eventId,tbEvent
-    local infoMsg = ""
+    local infoMsg = "infoMsg:"
     -- 事件过滤
     repeat
         local arrayIndex,eventElement
