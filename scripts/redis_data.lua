@@ -703,6 +703,7 @@ function RedisData:getEventId(data,zoneId,publisherId)
     local zoneRuleInfos = {}
     zoneRuleInfos.googleEnable = zoneRule.googleEnable or false
     zoneRuleInfos.adUnitName = zoneRule.adUnitName or ""
+    zoneRuleInfos.zoneType = zoneRule.zoneType or "normal" -- normal,google,custom
     -- 全局策略配置为空，或是小于零，直接通过
     local zoneFilterResult = false
 
