@@ -622,8 +622,8 @@ end
 
 function RedisData:getEventId(data,zoneId,publisherId)
     -- 全局规则判断
-    local globalDayIpPvNumber = self:getIpAddrUv("loginfo",data.ip_address)
-    local globalThreeNumber = self:getThreeIpPv("loginfo",data.ip_address)
+    local globalDayIpPvNumber = self:getIpAddrUv("loginfo",data.ip_address) or 0
+    local globalThreeNumber = self:getThreeIpPv("loginfo",data.ip_address) or 0
     if globalDayIpPvNumber ~= nil and globalThreeNumber ~=nil then
         -- 取IP取则
         local limitNumber = 0
