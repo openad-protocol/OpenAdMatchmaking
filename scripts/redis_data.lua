@@ -630,8 +630,8 @@ function RedisData:getEventId(data,zoneId,publisherId)
         local limit30Number = 0
         local ipRule,err =self:getGlobalIPRule()
         if err ==nil and  ipRule ~= nil then
-            limitNumber =tonumber(ipRule.dayPvLimit)
-            limit30Number = tonumber(ipRule.threeSecLimit)
+            limitNumber =tonumber(ipRule.dayPvLimit or 10000)
+            limit30Number = tonumber(ipRule.threeSecLimit or 200)
             -- 日全局判定
             if (globalDayIpPvNumber > limitNumber) or (globalThreeNumber > limit30Number)  then
                 ngx.log(ngx.DEBUG,"global rule failed")
